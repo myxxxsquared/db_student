@@ -7,14 +7,14 @@
 - 批量插入
 - 逐个插入
 - 按主键删除
-- 筛选删除
+- 筛选删除，删除schoolsup为yes
 - 全部删除
-- 按主键修改
-- 筛选修改
-- 全部修改
-- 按主键查询属性
-- 按条件查询属性
-- 遍历
+- 按主键修改，reason修改为other
+- 筛选修改，schoolsup为yes的修改age为15
+- 全部修改，修改age为16
+- 按主键查询属性，查询famsize
+- 按条件查询属性，查询schoolsup为yes的famsize
+- 遍历，查询famsize
 
 ## 运行环境
 
@@ -22,6 +22,13 @@
 OS: Ubuntu 18.04 Bionic Beaver (development branch)
 CPU: Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz
 Memory: 8G
+Python: 3.5.5
+Redis: v4.0.8
+py-redis: v2.10.6
+Mongodb: v3.4.14
+pymongo: v3.6.1
+Cassandra: v3.11.2
+py-cassandra: v3.11.0
 ```
 
 ## 安装与配置

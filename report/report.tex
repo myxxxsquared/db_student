@@ -1,0 +1,105 @@
+% !TEX program = xelatex
+
+\documentclass[12pt]{ctexart}
+
+\usepackage[colorlinks,linkcolor=red]{hyperref}
+
+\title{NoSQL数据库的简单操作\\{\Large 大数据管理技术第一次实习作业}}
+\author{张文杰 1500011394}
+
+\begin{document}
+
+\maketitle
+
+\section{简介}
+
+本次实习作业包含了Redis、MongoDB、Cassandra三种NoSQL数据库的安装配置和使用的练习。通过对于给定的学生数据的处理，比较了这三种不同的数据库在不同的增、删、改、查操作的易用性和效率差异，并运用这些差距分析了这三种NoSQL数据库的特点和适用场景。
+
+报告中仅展示了简略的源代码与操作步骤，更为详细的内容已上传至Github \url{https://github.com/myxxxsquared/db_student}
+
+\section{安装与配置}
+
+我使用我的笔记本电脑进行本次的实习作业，操作系统为Ubuntu 18.04，主要使用 Miniconda(Python) 进行数据库操作和效率测试。
+我选用了预编译版本的Redis、MongoDB、Cassandra，使用Ubuntu的包管理工具APT进行安装。搭建Miniconda环境，并安装数据库的Python驱动。
+具体操作步骤见Github。
+
+\section{NoSQL数据库的使用}
+
+\subsection{Redis}
+
+Redis数据库主要用于储存键值对和哈系表结构，在Python中使用只需调用相应的操作函数即可完成。Redis数据库没有额外的数据索引结构，因此对于数据库的访问只可以通过键名称进行。
+
+Redis数据库中的增加操作可以直接使用hmset命令进行。通过键名称进行修改、查询、删除操作可以直接使用相应的命令hmset, hmget, del进行，然而如果想要通过数据值进行修改、查询、删除，则需要手动遍历整个数据库，筛选出需要操作的键名称，再进行相关操作。
+
+\subsection{MongoDB}
+
+MongoDB是用于储存文档的数据库，可以直接储存json文档。
+
+MongoDB的增加使用的是insert\_many或insert\_one函数。修改使用的是update\_one或update\_many函数，其中的参数可以提供筛选信息和修改信息。删除使用的是delete\_one或delete\_many，提供了用于筛选删除的信息。查询使用的是find函数。
+
+MongoDB提供了相当灵活的查询、修改指令，使得MongoDB的使用比Redis和Cassandra简单很多。MongoDB的查询可以直接使用一个json指定查询方式，例如``\{`schoolsup': `yes'\}''表示了查询`schoolsup'为`yes'的文档。MongoDB的修改操作也是使用一个json指定，例如``\{`\$set': \{`schoolsup': `yes'\}\}''表示将`schoolsup'设置为`yes'。
+
+\subsection{Cassandra}
+
+Cassandra数据库储存的是比较有结构化的数据，类似于一张二维表。不同于传统关系型数据库的是，Cassandra的储存结构为按列存储，并且之对于主键进行索引。因此，所有操作必须以主键为依据进行，这一点类似于Redis，这就使得对于其他的操作必须遍历整个数据库。
+
+Cassandra采用了CQL语句操作，语法类似于SQL。使用SELECT, INSERT INTO, UPDATE, DELETE FROM进行查询、添加、更新、删除操作。与传统数据库不同之处是，CQL的操作只能以主键进行。为了达到以数据值操作必须遍历整个数据库。
+
+\section{三种数据库的效率测试}
+
+对于Redis、MongoDB、Cassandra三种数据库，我使用课程提供的student.csv数据，测试了以下11种操作的效率。
+
+\begin{itemize}
+    \itemsep0em
+    \item \textbf{I\_all}批量插入
+    \item \textbf{I\_one}逐个插入
+    \item \textbf{D\_id}按照主键删除
+    \item \textbf{D\_search}按照数据值删除，删除`schoolsup'为`yes'的记录
+    \item \textbf{D\_all}全部删除
+    \item \textbf{U\_id}按主键修改数据值，`reason'改为`other'
+    \item \textbf{U\_search}按数据值修改数据值，修改`schoolsup'为`yes'的记录，`age'修改为15
+    \item \textbf{U\_all}修改所有数据值，`age'修改为16
+    \item \textbf{S\_id}按主键查询数据值，查询`famsize'
+    \item \textbf{S\_search}按数据值查询数据值，查询`schoolsup'为`yes'的`famsize'
+    \item \textbf{S\_all}数据库遍历，查询所有的`famsize'
+\end{itemize}
+
+测试的运行时间如表\ref{tab}所示
+
+\begin{table}
+    \centering
+    \caption{三种数据库的测试运行时间\label{tab}}
+    \begin{tabular}{l|c|c|c}
+        \hline
+        操作 & Redis & MongoDB & Cassandra\\
+        \hline
+        I\_all & - & \textbf{0.101084} & 0.917867\\
+        I\_one & \textbf{0.331573} & 0.398549 & 1.094512\\
+        D\_id & \textbf{0.062058} & 0.354701 & 0.737409\\
+        D\_search & 0.083081 & \textbf{0.002577} & 0.110348\\
+        D\_all & 0.013847 & \textbf{0.006087} & 0.107526\\
+        U\_id & \textbf{0.064913} & 0.917833 & 0.800503\\
+        U\_search & 0.074324 & \textbf{0.002887} & 0.121632\\
+        U\_all & 0.082713 & \textbf{0.009799} & 0.859821\\
+        S\_id & \textbf{0.076591} & 1.055133 & 1.722984\\
+        S\_search & 0.076914 & \textbf{0.004754} & 0.021034\\
+        S\_all & 0.082175 & 0.016752 & \textbf{0.022636}\\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{三种数据库效率差异的分析}
+
+从表\ref{tab}中可以看出，对于以主键或键名为操作依据的插入、查询、修改、删除操作中，Redis数据库均表现出较高的效率，Cassandra次之，这正反映了两种数据库储存结构简单、专用于键名访问的特点。而对于按数据值的查询Redis和Cassandra需要遍历整个数据库，造成了较低的效率。
+
+经过比较可以发现，Redis对于同行的访问效率高于Cassandra数据库，而Cassandra对于同列访问的效率高于Redis，这是由这两种数据库的不同存储结构造成的。Redis为按行存储的键值对，Cassandra为按列存储并且以主键为索引。
+
+对于键进行按值操作中，MongoDB表现出较高的效率，这是由于只有MongoDB拥有除主键外的索引信息，提高了MongoDB的操作性能和数据库查询的灵活性。
+
+经过以上比较，可以知道，Redis主要适用于按键名来访问的按行查询操作，MongoDB则适用于更加灵活的查询与操作较多的环境下，Cassandra则适用于对于按列的查询操作较多的环境。
+
+\section{结论}
+
+本次实习作业中通过对Redis、MongoDB、Cassandra三种数据库进行不同操作的比较，加深了对于这三种不同数据库功能和应用场景的理解。个人而言，我还是更喜欢MongoDB，因为它的操作简单，并且效率也比较高，写程序只需要几行代码就可以完成操作。不过另外两种数据库也适用于其他场合，遇到具体的问题，需要具体分析。
+
+\end{document}
